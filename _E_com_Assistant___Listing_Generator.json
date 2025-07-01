@@ -1,0 +1,189 @@
+{
+  "name": "“E-com Assistant – Listing Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        40,
+        0
+      ],
+      "id": "4b02547b-58ad-44f3-9f38-df3071726e08",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OT5jlzbaE5vaP2pc",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -220
+      ],
+      "id": "4e71c7c6-d874-4cfd-9c0d-dfc0220578ea",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd876ced-7c2e-4481-aff4-b6f34341f78b",
+              "name": "productName",
+              "value": "Laptop",
+              "type": "string"
+            },
+            {
+              "id": "bf29ae29-2ae4-426f-9074-dedd2cb71a8b",
+              "name": "features",
+              "value": "10th generation",
+              "type": "string"
+            },
+            {
+              "id": "6406e4e1-1696-4cbb-aefd-80b98839a9fd",
+              "name": "targetAudience",
+              "value": "Tech people",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -180,
+        -220
+      ],
+      "id": "59728643-182e-40e0-9d67-9e888bfe39f5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json[\"output\"];\nconst clean = raw.replace(/```json\\n?|```/g, '').trim();\nreturn JSON.parse(clean);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -220
+      ],
+      "id": "b83bb211-a1dc-4f06-bf79-917046855687",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "=https://dummyjson.com/products/search?q={{ $json[\"title\"] }}\n\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        -220
+      ],
+      "id": "458deed7-281c-4be8-aff2-3f8f5f638420",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional e-commerce content generator. Based on the following product information, create a JSON output with:\n\n- title (product title),\n- description (2-3 line summary),\n- bullet_points (array of key features),\n- hashtags (marketing-relevant hashtags).\n\nDo not hallucinate. Use only the provided data.\n\nProduct Name: {{ $json[\"productName\"] }}\nAudience: {{ $json[\"targetAudience\"] }}\nFeatures: {{ $json[\"features\"] }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        40,
+        -220
+      ],
+      "id": "f000a61c-b9df-4dbd-aaca-a03bccb0b303",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9a3a1586-9536-4731-be20-aefbf094d854",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "59838367fbd4d906ada7696188120fd33cf874142548b7e7847a21c08669bcaa"
+  },
+  "id": "d5HftH9ftUOmna9f",
+  "tags": []
+}
